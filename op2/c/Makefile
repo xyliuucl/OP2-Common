@@ -34,11 +34,12 @@ ifeq ($(OP2_COMPILER),gnu)
 	MPIFLAGS := $(CXXFLAGS)
 else
 ifeq ($(OP2_COMPILER),intel)
-	CC       := icc
+	CC       := icc -c99
 	CCFLAGS  := -O3 -vec-report -xSSE4.2 #-DCOMM_PERF #-DDEBUG -g
 	CXX      := icpc
 	CXXFLAGS := $(CCFLAGS)
 	MPICXX   := mpiCC
+	MPICC    := mpicc -c99
 	MPIFLAGS := $(CXXFLAGS)
 else
 ifeq ($(OP2_COMPILER),pgi)
@@ -56,6 +57,9 @@ endif
 endif
 
 NVCCFLAGS	= -O3 -arch=sm_20 -Xptxas -dlcm=ca -Xptxas=-v -use_fast_math #-g -G -O0
+
+METIS_LIB = -L/home/gihan/ParMetis-3.2.0-intel/ -lmetis
+METIS_INC = -I/home/gihan/ParMetis-3.2.0-intel/METISLib/ -DHAVE_METIS
 
 PARMETIS_INCLUDE_PATH ?= $(PARMETIS_INSTALL_PATH)
 PARMETIS_LIB_PATH ?= $(PARMETIS_INSTALL_PATH)
@@ -80,6 +84,8 @@ mklib:
 core: mklib $(INC)/op_lib_core.h $(SRC)/core/op_lib_core.c
 	$(CXX) $(CXXFLAGS) -I$(INC) -c $(SRC)/core/op_lib_core.c -o $(OBJ)/op_lib_core.o
 	$(CXX) $(CXXFLAGS) -I$(INC) -c $(SRC)/externlib/op_util.c -o $(OBJ)/op_util.o
+	$(MPICC) $(CXXFLAGS) -I$(INC) $(METIS_INC) \
+	$(METIS_LIB) -c $(SRC)/core/op_local_renumbering.c -o $(OBJ)/op_local_renumbering.o
 
 hdf5: mklib $(SRC)/externlib/op_hdf5.c $(INC)/op_hdf5.h
 	$(MPICXX) $(CXXFLAGS) -I$(INC) $(HDF5_INC) -c $(SRC)/externlib/op_hdf5.c \
@@ -141,7 +147,8 @@ mpi_seq: mklib $(INC)/op_seq.h $(SRC)/mpi/op_mpi_decl.c \
 	$(OBJ)/op_mpi_decl.o \
 	$(OBJ)/op_mpi_rt_support.o \
 	$(OBJ)/op_util.o \
-	$(OBJ)/op_mpi_hdf5.o
+	$(OBJ)/op_mpi_hdf5.o \
+	$(OBJ)/op_local_renumbering.o
 
 mpi_cuda: mklib $(SRC)/mpi/op_mpi_part_core.c \
 	$(SRC)/mpi/op_mpi_core.c $(INC)/op_hdf5.h $(SRC)/mpi/op_mpi_hdf5.c \

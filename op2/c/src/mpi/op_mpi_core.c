@@ -1176,7 +1176,7 @@ void op_halo_create()
   }
 
   //now need to renumber mapping tables as the elements are seperated
-  for(int m=0; m<OP_map_index; m++) { //for each set
+  for(int m=0; m<OP_map_index; m++) { //for each map
     op_map map=OP_map_list[m];
 
     halo_list exec_map_list=OP_import_exec_list[map->from->index];

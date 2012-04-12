@@ -2199,7 +2199,7 @@ void op_partition_geomkway(op_dat coords, op_map primary_map)
   }
 
 
-  /*--STEP 1 - Construct adjacency list of the to-set of the primary_map -------*/
+  /*--STEP 2 - Construct adjacency list of the to-set of the primary_map -------*/
 
   //
   //create export list
@@ -2478,7 +2478,7 @@ void op_partition_geomkway(op_dat coords, op_map primary_map)
   OP_part_list[coords->set->index]->elem_part= partition;
   OP_part_list[coords->set->index]->is_partitioned = 1;
 
-  /*-STEP 2 - Partition all other sets,migrate data and renumber mapping tables-*/
+  /*-STEP 3 - Partition all other sets,migrate data and renumber mapping tables-*/
 
   //partition all other sets
   partition_all(primary_map->to, my_rank, comm_size);
@@ -3176,5 +3176,7 @@ void partition(const char* lib_name, const char* lib_routine,
   //trigger halo creation routines
   op_halo_create();
 
+  //trigger local renumbering routine
+  op_local_renumbering_metiskway();
 }
 

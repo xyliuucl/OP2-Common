@@ -102,6 +102,8 @@ void op_printf(const char* format, ...);
 
 void op_timers( double *cpu, double *et );
 
+void op_local_renumbering_metiskway();
+
 #ifdef __cplusplus
 }
 #endif

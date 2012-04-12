@@ -287,6 +287,7 @@ void op_partition_ptscotch(op_map primary_map);
 void op_exchange_halo(op_arg* arg);
 void op_wait_all(op_arg* arg);
 
+extern "C" void METIS_PartGraphKway(int*, int*, int*,int*,int*, int*, int*,int*,int*,int*, int*);
 
 #endif /* __OP_MPI_CORE_H */
 

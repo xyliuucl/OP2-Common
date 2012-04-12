@@ -62,6 +62,9 @@ NVCCFLAGS	= -O3 -arch=sm_20 -Xptxas=-v -Dlcm=ca -use_fast_math #-g -G -O0
 # partitioning software for MPI versions
 #
 
+METIS_INC = -I/home/gihan/ParMetis-3.2.0-intel/METISLib/
+METIS_LIB = -L/home/gihan/ParMetis-3.2.0-intel/ -lmetis
+
 PARMETIS_INC 	= -I$(PARMETIS_INSTALL_PATH) -DHAVE_PARMETIS
 PARMETIS_LIB 	= -L$(PARMETIS_INSTALL_PATH) -lparmetis \
 	       	      -L$(PARMETIS_INSTALL_PATH) -lmetis
@@ -121,8 +124,8 @@ airfoil_kernels_cu.o:	airfoil_kernels.cu      \
 #
 
 airfoil_mpi: airfoil_mpi.cpp save_soln.h adt_calc.h res_calc.h bres_calc.h Makefile
-	$(MPICPP) $(MPIFLAGS) $(OP2_INC) $(PARMETIS_INC) $(PTSCOTCH_INC) \
-	$(OP2_LIB) airfoil_mpi.cpp -lop2_mpi $(PARMETIS_LIB) $(PTSCOTCH_LIB) -o airfoil_mpi
+	$(MPICPP) $(MPIFLAGS) $(OP2_INC) $(PARMETIS_INC) $(PTSCOTCH_INC) $(METIS_INC) \
+	$(OP2_LIB) airfoil_mpi.cpp -lop2_mpi $(PARMETIS_LIB) $(PTSCOTCH_LIB) $(METIS_LIB) -o airfoil_mpi
 
 
 #
