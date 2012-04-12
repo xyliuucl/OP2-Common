@@ -11,9 +11,22 @@
 #include <metis.h>
 #endif
 
+//Need OP_reverse_map_list[OP_map_index] to hold the reverse mappings
+int OP_reverse_map_index = 0;
+op_map * OP_reverse_map_list;
+
 /*******************************************************************************
  * Routine to do local renumbering using Metis k-way
  *******************************************************************************/
+
+void op_local_renumbering_metiskway_new()
+{
+  //for each map create reverse map
+  for(int m = 0; m<OP_map_index; m++)
+  {
+    op_map map = OP_map_list[m];
+  }
+}
 
 void op_local_renumbering_metiskway()
 {
@@ -38,7 +51,7 @@ void op_local_renumbering_metiskway()
   }*/
 
   //for each set need to do the local renumbering for the core elements
-  for(int s=0; s<OP_set_index; s++) {
+  for(int s=0; s<1/*OP_set_index*/; s++){
     op_set set = OP_set_list[s];
     //need int array to hold the candidate mapping indexes
     int candidate_maps[OP_map_index*2];
@@ -110,12 +123,26 @@ void op_local_renumbering_metiskway()
         }
       }
 
+      /*for(int i = 0; i < primary_map->to->core_size; i++)
+        {
+        quickSort(adj[i], 0, adj_i[i]-1);
+        adj_i[i] = removeDups(adj[i], adj_i[i]);
+        adj[i] = (int *)xrealloc(adj[i],adj_i[i]*sizeof(int));
+        for(int j = 0; j<adj_i[i] ; j++)
+        if(adj[i][j] != i)
+        {
+        printf(" %d ",adj[i][j]);
+
+        }
+        printf("\n");
+        }*/
+
       //look for lone nodes/vertices
       int lone_vertices_index = 0;
       int* lone_vertices = (int *)xmalloc(primary_map->to->core_size*sizeof(int ));
       for(int i = 0; i<primary_map->to->core_size; i++)
       {
-        if(adj_i[i] == 0)
+        if(adj_i[i] < 2)
         {
           lone_vertices[lone_vertices_index++] = i;
         }
@@ -127,72 +154,73 @@ void op_local_renumbering_metiskway()
       int* local_index = (int *)xmalloc(primary_map->to->core_size*sizeof(int ));
       for(int i = 0; i<primary_map->to->core_size; i++)local_index[i] = i;
 
-      //move non-connected set elements to the end of the list -
-      //update local-index array to point to new possitions of the elements
-      int count = 0;
-      for(int i = 0; i<primary_map->to->core_size; i++)
-      {
-        if(adj_i[i] == 0)
-        {
-          count++;
-          local_index[count] = local_index[i];
-        }
-      }
-      for(int i = 0; i< lone_vertices_index; i++) local_index[count] = lone_vertices[i];
-
       //create csr table with *only* the connected set elements
       idxtype *xadj = (idxtype *)xmalloc(sizeof(idxtype)*(primary_map->to->core_size+1));
-      int cap = (primary_map->to->size)*primary_map->dim;
+      int cap = (primary_map->to->core_size)*primary_map->dim;
       idxtype *adjncy = (idxtype *)xmalloc(sizeof(idxtype)*cap);
 
-      count = 0;int prev_count = 0;
+      int count = 0;int prev_count = 0;
       for(int i = 0; i<primary_map->to->core_size; i++)
       {
         int l_index = i;
         quickSort(adj[i], 0, adj_i[i]-1);
         adj_i[i] = removeDups(adj[i], adj_i[i]);
 
-        if(adj_i[i] != 0)
+        adj[i] = (int *)xrealloc(adj[i],adj_i[i]*sizeof(int));
+        for(int j = 0; j<adj_i[i]; j++)
         {
-          adj[i] = (int *)xrealloc(adj[i],adj_i[i]*sizeof(int));
-          for(int j = 0; j<adj_i[i]; j++)
+          if(adj[i][j] != l_index)
           {
-            if(adj[i][j] != l_index)
+            if(count >= cap)
             {
-              if(count >= cap)
-              {
-                cap = cap*2;
-                adjncy = (idxtype *)xrealloc(adjncy,sizeof(idxtype)*cap);
-              }
-              adjncy[count++] = (idxtype)adj[i][j];
+              cap = cap*2;
+              adjncy = (idxtype *)xrealloc(adjncy,sizeof(idxtype)*cap);
             }
-          }
-          if(i != 0)
-          {
-            xadj[i] = prev_count;
-            prev_count = count;
-          }
-          else
-          {
-            xadj[i] = 0;
-            prev_count = count;
+            adjncy[count++] = (idxtype)adj[i][j];
           }
         }
+        if(i != 0)
+        {
+          xadj[i] = prev_count;
+          prev_count = count;
+        }
+        else
+        {
+          xadj[i] = 0;
+          prev_count = count;
+        }
       }
-      xadj[primary_map->to->size] = count;
+      xadj[primary_map->to->core_size] = count;
+
+      /*for(int i = 0; i < primary_map->to->core_size; i++)
+        {
+        for(int j = xadj[i]; j<xadj[i+1]; j++)
+        printf(" %d ",adjncy[j]);
+        printf("\n");
+        }*/
+
+      adjncy = (idxtype *)xrealloc(adjncy,sizeof(idxtype)*count);
+
+      printf("core size = %d , After Count = %d\n",primary_map->to->core_size,count);
 
       for(int i = 0; i<primary_map->to->core_size; i++)free(adj[i]);
       free(adj_i);free(adj_cap);free(adj);
 
-
-      idxtype *partition = (idxtype *)xmalloc(sizeof(idxtype)*primary_map->to->core_size);
-      for(int i = 0; i < primary_map->to->core_size; i++){ partition[i] = -99; }
+      idxtype *p = (idxtype *)xmalloc(sizeof(idxtype)*primary_map->to->core_size);
+      for(int i = 0; i < primary_map->to->core_size; i++){ p[i] = -99; }
 
       idxtype ncon = 1;
       int edgecut = 0;
-      int part = 1024;
+      int part = 2000;
+      idxtype wgtflag = 0;
+      int options[5] = {0};
+      idxtype numflag = 0;
+      int nn = primary_map->to->core_size;
+      printf("nn = %d\n",nn);
 
-      METIS_PartGraphKway(&count, xadj, adjncy, NULL, NULL, NULL, NULL, &part, NULL, &edgecut, partition);
+      METIS_PartGraphKway(&nn, xadj, adjncy, NULL, NULL, &wgtflag, &numflag, &part, options, &edgecut, p);
+
+      //METIS_PartGraphKway(nn, xadj, adjncy, NULL, NULL, &wgtflag, &pnumflag, nparts, options, edgecut, npart);
 
       //call partitioner with the number of mini-partitions required and get the partition info array
 

@@ -34,12 +34,12 @@ ifeq ($(OP2_COMPILER),gnu)
 	MPIFLAGS := $(CXXFLAGS)
 else
 ifeq ($(OP2_COMPILER),intel)
-	CC       := icc -c99
-	CCFLAGS  := -O3 -vec-report -xSSE4.2 #-DCOMM_PERF #-DDEBUG -g
+	CC       := icc -std=c99
+	CCFLAGS  := -O0 -g #-vec-report -xSSE4.2 #-DCOMM_PERF #-DDEBUG -g
 	CXX      := icpc
 	CXXFLAGS := $(CCFLAGS)
 	MPICXX   := mpiCC
-	MPICC    := mpicc -c99
+	MPICC    := mpicc -std=c99
 	MPIFLAGS := $(CXXFLAGS)
 else
 ifeq ($(OP2_COMPILER),pgi)
