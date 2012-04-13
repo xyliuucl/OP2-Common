@@ -50,6 +50,8 @@
 #endif
 #define MPI_ROOT 0
 
+
+
 /*******************************************************************************
 * MPI halo list data type
 *******************************************************************************/
@@ -149,6 +151,17 @@ typedef struct {
 } op_mpi_buffer_core;
 
 typedef op_mpi_buffer_core *op_mpi_buffer;
+
+//
+//MPI Halo related global variables
+//
+
+extern halo_list *OP_export_exec_list;//EEH list
+extern halo_list *OP_import_exec_list;//IEH list
+
+extern halo_list *OP_import_nonexec_list;//INH list
+extern halo_list *OP_export_nonexec_list;//ENH list
+
 
 /** external variables **/
 
@@ -287,7 +300,7 @@ void op_partition_ptscotch(op_map primary_map);
 void op_exchange_halo(op_arg* arg);
 void op_wait_all(op_arg* arg);
 
-extern "C" void METIS_PartGraphKway(int*, int*, int*,int*,int*, int*, int*,int*,int*,int*, int*);
+//extern "C" void METIS_PartGraphKway(int*, int*, int*,int*,int*, int*, int*,int*,int*,int*, int*);
 
 #endif /* __OP_MPI_CORE_H */
 

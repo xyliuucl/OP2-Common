@@ -1208,6 +1208,19 @@ void op_halo_create()
     }
   }
 
+  for(int m=0; m<OP_map_index; m++) { //for each map
+    op_map map=OP_map_list[m];
+    for(int i = 0; i<map->from->core_size; i++)
+    {
+      for(int j=0; j < map->dim; j++)
+      {
+        if(map->map[i*map->dim+j] >= map->to->size)
+        printf("Problem : Halo elemet pointed to by core element in map from set %s\n",
+            map->from->name);
+      }
+    }
+  }
+
 
   /*-STEP 11 ----------- Save the original set element indexes------------------*/
 
