@@ -1140,6 +1140,7 @@ void op_halo_create()
         }
       }
 
+      //recreate halo list with new indicies
       for(int i  = 0; i< exec->size;i++)
       {
         int index = binary_search(exp_elems[set->index],

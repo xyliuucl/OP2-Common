@@ -3177,6 +3177,6 @@ void partition(const char* lib_name, const char* lib_routine,
   op_halo_create();
 
   //trigger local renumbering routine
-  op_local_renumbering_metiskway();
+  op_local_renumbering_metiskway(2048);
 }
 

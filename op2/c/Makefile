@@ -35,7 +35,7 @@ ifeq ($(OP2_COMPILER),gnu)
 else
 ifeq ($(OP2_COMPILER),intel)
 	CC       := icc -std=c99
-	CCFLAGS  := -O0 -g #-vec-report -xSSE4.2 #-DCOMM_PERF #-DDEBUG -g
+	CCFLAGS  := -O3 -vec-report -xSSE4.2 #-DCOMM_PERF #-DDEBUG -g
 	CXX      := icpc
 	CXXFLAGS := $(CCFLAGS)
 	MPICXX   := mpiCC
@@ -186,7 +186,8 @@ mpi_cuda: mklib $(SRC)/mpi/op_mpi_part_core.c \
 	$(OBJ)/op_mpi_cuda_rt_support.o $(OBJ)/op_mpi_cuda_decl.o \
 	$(OBJ)/op_util.o \
 	$(OBJ)/op_mpi_hdf5.o \
-	$(OBJ)/op_mpi_cuda_kernels.o
+	$(OBJ)/op_mpi_cuda_kernels.o \
+	$(OBJ)/op_local_renumbering.o
 
 clean:
 	-rm -if $(OBJ)/*.o
