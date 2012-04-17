@@ -3057,7 +3057,7 @@ void op_partition_ptscotch(op_map primary_map)
 * Toplevel partitioning selection function - also triggers halo creation
 *******************************************************************************/
 void partition(const char* lib_name, const char* lib_routine,
-  op_set prime_set, op_map prime_map, op_dat coords )
+  op_set prime_set, op_map prime_map, op_dat coords, int num_parts )
 {
 #if !defined(HAVE_PTSCOTCH) && !defined(HAVE_PARMETIS)
   /* Suppress warning */
@@ -3177,6 +3177,6 @@ void partition(const char* lib_name, const char* lib_routine,
   op_halo_create();
 
   //trigger local renumbering routine
-  op_local_renumbering_metiskway(2048);
+  op_local_renumbering_metiskway(num_parts);
 }
 

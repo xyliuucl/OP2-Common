@@ -106,12 +106,15 @@ void op_mpi_reduce_int(op_arg* args, int* data)
 }
 
 void op_partition(const char* lib_name, const char* lib_routine,
-  op_set prime_set, op_map prime_map, op_dat coords ) {
+  op_set prime_set, op_map prime_map, op_dat coords, int num_parts ) {
   (void)lib_name;
   (void)lib_routine;
   (void)prime_set;
   (void)prime_map;
   (void)coords;
+
+  //op_local_renumbering_metiskway(num_parts);
+
 }
 
 void op_partition_reverse() {

@@ -258,7 +258,7 @@ void global_reduce(op_arg* arg);
 
 
 void partition(const char* lib_name, const char* lib_routine,
-  op_set prime_set, op_map prime_map, op_dat coords );
+  op_set prime_set, op_map prime_map, op_dat coords, int num_parts );
 
 /******************************************************************************
 * Random partitioning wrapper prototype

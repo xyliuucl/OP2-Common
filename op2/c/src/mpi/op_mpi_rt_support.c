@@ -50,21 +50,6 @@
 #include <op_rt_support.h>
 #include <op_lib_mpi.h>
 
-
-// //
-// //MPI Halo related global variables
-// //
-//
-// extern halo_list *OP_export_exec_list;//EEH list
-// halo_list *OP_import_exec_list;//IEH list
-//
-// halo_list *OP_import_nonexec_list;//INH list
-// halo_list *OP_export_nonexec_list;//ENH list
-//
-// //
-// //global array to hold dirty_bits for op_dats
-// //
-
 /*******************************************************************************
  * Main MPI Halo Exchange Function
  *******************************************************************************/
@@ -215,8 +200,8 @@ void op_wait_all(op_arg* arg)
 }
 
 void op_partition(const char* lib_name, const char* lib_routine,
-  op_set prime_set, op_map prime_map, op_dat coords )
+  op_set prime_set, op_map prime_map, op_dat coords, int num_parts )
 {
-  partition(lib_name, lib_routine, prime_set, prime_map, coords );
+  partition(lib_name, lib_routine, prime_set, prime_map, coords, num_parts );
 
 }
