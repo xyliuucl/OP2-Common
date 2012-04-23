@@ -13,8 +13,13 @@
 
 #include <op_mpi_core.h>
 
+//set up a list of arrays to hold the new reordered indicies of a set
+int** reordered_index;
+//array to hold the flag that says if a set is reordered
+int *reordered;
+
 void metis_call(op_map primary_map, op_set set, int** adj, int* adj_i,
-  int* adj_cap, int** reordered_index, int* reordered, int num_part )
+  int* adj_cap, int num_part )
 {
   //create array with new element indicies when removing lone elements
   int* new_index = (int *)xmalloc(set->core_size*sizeof(int ));
@@ -98,7 +103,7 @@ void metis_call(op_map primary_map, op_set set, int** adj, int* adj_i,
   free(adj_i);free(adj_i_new);free(adj_cap);free(adj);free(adj_new);
 
   //call partitioner with the number of mini-partitions required and get the partition info array
-  if(nn > 1)
+  if(nn > part)
   {
     adjncy = (idxtype *)xrealloc(adjncy,sizeof(idxtype)*count);
 
@@ -136,8 +141,7 @@ void metis_call(op_map primary_map, op_set set, int** adj, int* adj_i,
   }
 }
 
-void create_reordering(op_map primary_map, op_set set,
-  int** reordered_index, int* reordered, int num_part)
+void create_reordering(op_map primary_map, op_set set, int num_part)
 {
   int** adj = (int **)xmalloc(primary_map->to->core_size*sizeof(int *));
   int* adj_i = (int *)xmalloc(primary_map->to->core_size*sizeof(int ));
@@ -162,21 +166,20 @@ void create_reordering(op_map primary_map, op_set set,
           {
             adj_cap[local_index] = adj_cap[local_index]*2;
             adj[local_index] = (int *)xrealloc(adj[local_index],
-              adj_cap[local_index]*sizeof(int));
+                adj_cap[local_index]*sizeof(int));
           }
           if(primary_map->map[i*primary_map->dim+k] < primary_map->to->core_size)
             adj[local_index][adj_i[local_index]++] =
-            primary_map->map[i*primary_map->dim+k];
+              primary_map->map[i*primary_map->dim+k];
         }
       }
     }
   }
 
-  metis_call(primary_map, set, adj, adj_i, adj_cap, reordered_index, reordered, num_part);
+  metis_call(primary_map, set, adj, adj_i, adj_cap, num_part);
 }
 
-void create_reverse_reordering(op_map primary_map, op_set set, int** reordered_index,
-  int* reordered, int num_part)
+void create_reverse_reordering(op_map primary_map, op_set set, int num_part)
 {
   //create reverse map
   int** to = (int **)xmalloc(primary_map->to->size*sizeof(int *));
@@ -249,19 +252,20 @@ void create_reverse_reordering(op_map primary_map, op_set set, int** reordered_i
   for(int i = 0; i<primary_map->to->size; i++)free(to[i]);
   free(to_cap);free(to_i);
 
-  metis_call(primary_map, set, adj, adj_i, adj_cap, reordered_index, reordered, num_part);
+  metis_call(primary_map, set, adj, adj_i, adj_cap, num_part);
 }
 
 /*******************************************************************************
  * Routine to do local renumbering using Metis k-way
  *******************************************************************************/
+
 void op_local_renumbering_metiskway(int num_part)
 {
   //set up a list os arrays to hold the new reordered indicies of a set
-  int** reordered_index = (int **)xmalloc(OP_set_index*sizeof(int *));
+  reordered_index = (int **)xmalloc(OP_set_index*sizeof(int *));
 
   //array to hold the flag that says if a set is reordered
-  int *reordered = (int *)xmalloc(OP_set_index*sizeof(int));
+  reordered = (int *)xmalloc(OP_set_index*sizeof(int));
   for(int i = 0; i<OP_set_index; i++) reordered[i] = 0;
 
   //for each set need to do the local renumbering for the core elements
@@ -278,13 +282,13 @@ void op_local_renumbering_metiskway(int num_part)
       if(compare_sets(map->to,set)==1)
       {
         found = 1;
-        create_reordering(map, set, reordered_index, reordered, num_part);
+        create_reordering(map, set, num_part);
         break;
       }
       else if (compare_sets(map->from,set)==1)
       {
         found = 1;
-        create_reverse_reordering(map, set, reordered_index, reordered, num_part);
+        create_reverse_reordering(map, set, num_part);
         break;
       }
     }
@@ -292,7 +296,7 @@ void op_local_renumbering_metiskway(int num_part)
     if(found != 1)
     {
       printf("Set %s not reordered : could not find suitable mapping or reverse mapping\n",
-        set->name);
+          set->name);
     }
   }
 
@@ -310,10 +314,10 @@ void op_local_renumbering_metiskway(int num_part)
         {
           char* new_dat = (char* )xmalloc(set->core_size*dat->size);
           for(int i = 0; i<set->core_size; i++)
-            {
-              memcpy(&new_dat[reordered_index[set->index][i]*dat->size],
+          {
+            memcpy(&new_dat[reordered_index[set->index][i]*dat->size],
                 &dat->data[i*dat->size],dat->size);
-            }
+          }
           memcpy(&dat->data[0],&new_dat[0], set->core_size*dat->size);
           free(new_dat);
         }
@@ -328,10 +332,10 @@ void op_local_renumbering_metiskway(int num_part)
         {
           int* new_map = (int* )xmalloc(set->core_size*map->dim*sizeof(int));
           for(int i = 0; i<set->core_size; i++)
-            {
-              memcpy(&new_map[reordered_index[set->index][i]*map->dim],
+          {
+            memcpy(&new_map[reordered_index[set->index][i]*map->dim],
                 &map->map[i*map->dim],map->dim*sizeof(int));
-            }
+          }
           memcpy(&map->map[0],&new_map[0], set->core_size*map->dim*sizeof(int));
           free(new_map);
         }
@@ -353,7 +357,7 @@ void op_local_renumbering_metiskway(int num_part)
               if(local_index < map->to->core_size)
               {
                 OP_map_list[map->index]->map[i*map->dim+k] =
-                reordered_index[map->to->index][map->map[i*map->dim+k]];
+                  reordered_index[map->to->index][map->map[i*map->dim+k]];
               }
             }
           }
@@ -366,14 +370,14 @@ void op_local_renumbering_metiskway(int num_part)
         int local_index = OP_export_exec_list[set->index]->list[i];
         if(local_index < set->core_size)
           OP_export_exec_list[set->index]->list[i] =
-          reordered_index[set->index][local_index];
+            reordered_index[set->index][local_index];
       }
       for(int i = 0; i< OP_export_nonexec_list[set->index]->size; i++)
       {
         int local_index = OP_export_nonexec_list[set->index]->list[i];
         if(local_index < set->core_size)
           OP_export_nonexec_list[set->index]->list[i] =
-          reordered_index[set->index][local_index];
+            reordered_index[set->index][local_index];
       }
       printf("Reordering and data migration done for set %s\n",set->name);
     }
