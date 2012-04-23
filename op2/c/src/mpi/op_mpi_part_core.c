@@ -3176,7 +3176,8 @@ void partition(const char* lib_name, const char* lib_routine,
   //trigger halo creation routines
   op_halo_create();
 
-  //trigger local renumbering routine
-  op_local_renumbering_metiskway(num_parts);
+  //trigger local renumbering routine if num_parts is greater than 1
+  if(num_parts>1)
+    op_local_renumbering_metiskway(num_parts);
 }
 
