@@ -13,7 +13,7 @@
 
 //scotch header
 #ifdef HAVE_SCOTCH
-#include <metis.h>
+#include <scotch.h>
 #endif
 
 #include <op_mpi_core.h>
@@ -234,6 +234,117 @@ int* metis_call(op_map primary_map, op_set set, int elem_count,
   return NULL;
 }
 
+int* scotch_call(op_map primary_map, op_set set, int elem_count,
+  int** adj, int* adj_i, int num_part )
+{
+  //
+  //Setup data structures for Scotch
+  //
+  SCOTCH_Graph *grafptr = SCOTCH_graphAlloc();
+  SCOTCH_graphInit(grafptr);
+
+  //base value for indexing arrays 0 for C and 1 for FORTRAN
+  SCOTCH_Num baseval = 0;
+
+  //vertex number - number of vertexes
+  SCOTCH_Num vertnbr =   elem_count+1;
+
+  //local vertex adjacency index array, of size (vertnbr+1)
+  SCOTCH_Num *verttab = (SCOTCH_Num *)xmalloc(sizeof(SCOTCH_Num)*(vertnbr+1));
+  int cap = (elem_count+1)*primary_map->dim;
+
+  SCOTCH_Num *vendtab = NULL;//not needed
+  SCOTCH_Num *velotab = NULL;//not needed
+  SCOTCH_Num *vlbltab = NULL;//not needed
+
+  //the local adjacency array, of size at least edgelocsiz,
+  //which stores the global indices of end vertices
+  SCOTCH_Num *edgetab = (SCOTCH_Num *)xmalloc(sizeof(SCOTCH_Num)*cap);
+  int count = 0;int prev_count = 0;
+
+  for(int i = 0; i<elem_count+1; i++)
+  {
+    int l_index = i;
+
+    if(adj_i[i] > 1){
+      for(int j = 0; j<adj_i[i]; j++){
+        if(adj[i][j] != l_index){
+          if(count >= cap){
+            cap = cap*2;
+            edgetab = (SCOTCH_Num *)xrealloc(edgetab,sizeof(SCOTCH_Num)*cap);
+          }
+          edgetab[count++] = (SCOTCH_Num)adj[i][j];
+        }
+      }
+      if(i != 0){
+        verttab[i] = prev_count;
+        prev_count = count;
+      }
+      else{
+        verttab[i] = 0;
+        prev_count = count;
+      }
+    }
+  }
+  verttab[elem_count+1] = count;
+
+  //local number of arcs (that is, twice the number of edges)
+  SCOTCH_Num edgenbr = count;
+
+  //free memory before calling SCOTCH
+  for(int i = 0; i<set->core_size; i++)free(adj[i]);
+  free(adj_i);free(adj);
+
+  SCOTCH_Num *edlotab = NULL;//not needed
+
+  //call partitioner with the number of mini-partitions required and get the partition info array
+  if(elem_count+1 > num_part)
+  {
+    //build a Scotch graph
+    SCOTCH_graphBuild(grafptr, baseval, vertnbr, verttab,
+      vendtab, velotab, vlbltab, edgenbr, edgetab, edlotab);
+    int test = SCOTCH_graphCheck(grafptr);
+    if(test == 1)
+    {
+      printf("Local renumbering Scotch Graph Inconsistant - Aborting\n");
+      exit(2);
+    }
+
+    SCOTCH_Num *parttab = (SCOTCH_Num *)xmalloc(sizeof(SCOTCH_Num)*elem_count+1);
+    for(int i = 0; i < elem_count+1; i++){ parttab[i] = -99; }
+
+    //initialise partition strategy struct
+    SCOTCH_Strat straptr;
+    SCOTCH_stratInit(&straptr);
+
+    //partition the graph
+    SCOTCH_graphPart(grafptr, num_part, &straptr, parttab);
+    free(edgetab);free(verttab);
+
+    //saniti check to see if all elements were partitioned
+    for(int i = 0; i<elem_count+1; i++)
+    {
+      if(parttab[i]<0)
+      {
+        printf("Local renumbering problem: set %s element %d not assigned a mini-partition\n",
+          set->name, i);
+        exit(2);
+      }
+    }
+
+    //free strat struct
+    SCOTCH_stratExit(&straptr);
+
+    //free PT-Scotch allocated memory space
+    free(grafptr);
+
+    return (int*)parttab;
+
+  }
+
+  return NULL;
+}
+
 void create_map(op_map primary_map, op_set set, int flag, int** map, int* map_i, int* cap)
 {
   if(flag == 0) //return same map
@@ -368,7 +479,8 @@ void reorder(op_map primary_map, op_set set, int num_part, int flag)
     printf("Lone vertices FOUND from using map %s for set %s = %d\n",
         primary_map->name, set->name, lone_vertices_index);
 
-  int* p = metis_call(primary_map, set, elem_count, adj, adj_i, num_part);
+  //int* p = metis_call(primary_map, set, elem_count, adj, adj_i, num_part);
+  int* p = scotch_call(primary_map, set, elem_count, adj, adj_i, num_part);
 
   if(p != NULL)
   {

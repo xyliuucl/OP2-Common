@@ -61,6 +61,9 @@ NVCCFLAGS	= -O3 -arch=sm_20 -Xptxas -dlcm=ca -Xptxas=-v -use_fast_math #-g -G -O
 METIS_LIB = -L/home/gihan/ParMetis-3.2.0-intel/ -lmetis
 METIS_INC = -I/home/gihan/ParMetis-3.2.0-intel/METISLib/ -DHAVE_METIS
 
+SCOTCH_LIB = -L/home/gihan/PT-Scotch-intel/lib -lscotch -lscotcherr
+SCOTCH_INC = -I/home/gihan/PT-Scotch-intel/include/ -DHAVE_SCOTCH
+
 PARMETIS_INCLUDE_PATH ?= $(PARMETIS_INSTALL_PATH)
 PARMETIS_LIB_PATH ?= $(PARMETIS_INSTALL_PATH)
 PARMETIS_INC = -I$(PARMETIS_INCLUDE_PATH) -DHAVE_PARMETIS
@@ -69,12 +72,12 @@ PARMETIS_LIB = -L$(PARMETIS_LIB_PATH) -lparmetis -lmetis
 PTSCOTCH_INCLUDE_PATH ?= $(PTSCOTCH_INSTALL_PATH)/include
 PTSCOTCH_LIB_PATH ?= $(PTSCOTCH_INSTALL_PATH)/lib
 PTSCOTCH_INC = -I$(PTSCOTCH_INCLUDE_PATH) -DHAVE_PTSCOTCH
-PTSCOTCH_LIB = -L$(PTSCOTCH_LIB_PATH) -lptscotch -lptscotcherr
+PTSCOTCH_LIB = -L$(PTSCOTCH_LIB_PATH) -lptscotch -lptscotcherr -lscotch -lscotcherr
 
 HDF5_INC = -I$(HDF5_INSTALL_PATH)/include
 HDF5_LIB = -L$(HDF5_INSTALL_PATH)/lib -lhdf5 -lz
 
-.PHONY: clean mklib
+.PHONY: clean mklibH
 
 all: clean core hdf5 seq openmp mpi_seq cuda mpi_cuda
 
@@ -84,7 +87,7 @@ mklib:
 core: mklib $(INC)/op_lib_core.h $(SRC)/core/op_lib_core.c
 	$(CXX) $(CXXFLAGS) -I$(INC) -c $(SRC)/core/op_lib_core.c -o $(OBJ)/op_lib_core.o
 	$(CXX) $(CXXFLAGS) -I$(INC) -c $(SRC)/externlib/op_util.c -o $(OBJ)/op_util.o
-	$(MPICC) $(CXXFLAGS) -I$(INC) $(METIS_INC) \
+	$(MPICC) $(CXXFLAGS) -I$(INC) $(METIS_INC) $(SCOTCH_INC) \
 	$(METIS_LIB) -c $(SRC)/core/op_local_renumbering.c -o $(OBJ)/op_local_renumbering.o
 
 hdf5: mklib $(SRC)/externlib/op_hdf5.c $(INC)/op_hdf5.h
