@@ -113,7 +113,7 @@ void op_partition(const char* lib_name, const char* lib_routine,
   (void)prime_map;
   (void)coords;
 
-  //op_local_renumbering_metiskway(num_parts);
+  //op_local_renumbering(num_parts);
 
 }
 
