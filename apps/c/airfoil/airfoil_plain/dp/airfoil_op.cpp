@@ -247,7 +247,7 @@ int main(int argc, char **argv)
 
   // main time-marching loop
 
-  niter = 1000;
+  niter = 10;
 
   for(int iter=1; iter<=niter; iter++) {
 
@@ -314,6 +314,7 @@ int main(int argc, char **argv)
   op_printf("Max total runtime = \n%f\n",wall_t2-wall_t1);
 
   op_print_dat_to_binfile(p_q, "out_grid.bin"); //Binary
+
 
   op_exit();
 
