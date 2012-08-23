@@ -48,8 +48,11 @@ int get_lone_elems(op_map primary_map, op_set set)
 
   for(int i = 0; i<primary_map->to->core_size; i++)
     if(adj_i[i] == 0) lone_elems++;
+
+#if DEBUG
   printf("for set %s lone elements using map %s: %d\n", set->name,
     primary_map->name, lone_elems);
+#endif
 
   free(adj_i);
 
@@ -117,9 +120,12 @@ int get_lone_elements_by_reverse_map(op_map primary_map, op_set set)
 
   for(int i = 0; i<primary_map->from->core_size; i++)
     if(adj_i[i] == 0) lone_elems++;
+
+#if DEBUG
   printf("for set %s lone elements using map reversed %s: %d\n", set->name,
     primary_map->name, lone_elems);
-
+#endif
+  
   for(int i = 0; i<primary_map->to->size; i++)free(to[i]);
   free(adj_i);free(to);free(to_i);free(to_cap);
 
@@ -591,7 +597,9 @@ void migrate_dats_and_maps()
           OP_export_nonexec_list[set->index]->list[i] =
             reordered_index[set->index][local_index];
       }
+#if DEBUG      
       printf("Reordering and data migration done for set %s\n",set->name);
+#endif
     }
   }
 }
@@ -659,7 +667,11 @@ void op_local_renumbering(int num_part /* const char *library*/)
     }
     else
     {
+      
+#if DEBUG      
       printf("Best map for Set %s : %s \n", set->name,OP_map_list[best_map]->name);
+#endif
+
       if (compare_sets(OP_map_list[best_map]->from,set)==1)
       {
         //create_reverse_reordering(OP_map_list[best_map], set, num_part);
