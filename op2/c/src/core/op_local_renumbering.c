@@ -525,8 +525,11 @@ void migrate_dats_and_maps()
     {
       //using the possition of the reordered_index array move the data on all
       //sets to the correct possition
-      for(int d=0; d<OP_dat_index; d++) { //for each dat
-        op_dat dat=OP_dat_list[d];
+      
+    //for each data array
+    op_dat_entry *item;
+    TAILQ_FOREACH(item, &OP_dat_list, entries) {
+      op_dat dat = item->dat;
 
         if(compare_sets(set,dat->set)==1)//if this data array is defined on this set
         {
