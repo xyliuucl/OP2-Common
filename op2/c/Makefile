@@ -19,7 +19,7 @@ INC = include
 LIB = lib
 OBJ = obj
 
-CUDA_INC = -I$(CUDA_INSTALL_PATH)/include
+CUDA_INC = -I$(CUDA_INSTALL_PATH)/include 
 
 #
 # compiler settings
@@ -43,7 +43,7 @@ ifeq ($(OP2_COMPILER),intel)
 else
 ifeq ($(OP2_COMPILER),pgi)
 	CC	 := pgcc
-	CCFLAGS	 := -O3
+	CCFLAGS	 := -O3 
 	CXX	 := pgCC
 	CXXFLAGS := $(CCFLAGS)
 	MPICXX	 := /home/gihan/openmpi-pgi/bin/mpiCC
@@ -57,8 +57,8 @@ endif
 
 NVCCFLAGS	= -O3 -arch=sm_20 -Xptxas -dlcm=ca -Xptxas=-v -use_fast_math #-g -G -O0
 
-PARMETIS_INCLUDE_PATH ?= $(PARMETIS_INSTALL_PATH)
-PARMETIS_LIB_PATH ?= $(PARMETIS_INSTALL_PATH)
+PARMETIS_INCLUDE_PATH ?= $(PARMETIS_INSTALL_PATH)/include
+PARMETIS_LIB_PATH ?= $(PARMETIS_INSTALL_PATH)/lib
 PARMETIS_INC = -I$(PARMETIS_INCLUDE_PATH) -DHAVE_PARMETIS
 PARMETIS_LIB = -L$(PARMETIS_LIB_PATH) -lparmetis -lmetis
 

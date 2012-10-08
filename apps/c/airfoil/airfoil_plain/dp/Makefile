@@ -62,9 +62,9 @@ NVCCFLAGS	= -O3 -arch=sm_20 -Xptxas=-v -Dlcm=ca -use_fast_math #-g -G -O0
 # partitioning software for MPI versions
 #
 
-PARMETIS_INC 	= -I$(PARMETIS_INSTALL_PATH) -DHAVE_PARMETIS
-PARMETIS_LIB 	= -L$(PARMETIS_INSTALL_PATH) -lparmetis \
-	       	      -L$(PARMETIS_INSTALL_PATH) -lmetis
+PARMETIS_INC 	= -I$(PARMETIS_INSTALL_PATH)/include -DHAVE_PARMETIS
+PARMETIS_LIB 	= -L$(PARMETIS_INSTALL_PATH)/lib -lparmetis \
+		-L$(PARMETIS_INSTALL_PATH)/lib -lmetis
 
 PTSCOTCH_INC 	= -I$(PTSCOTCH_INSTALL_PATH)/include -DHAVE_PTSCOTCH
 PTSCOTCH_LIB 	= -L$(PTSCOTCH_INSTALL_PATH)/lib/ -lptscotch \
@@ -124,7 +124,7 @@ airfoil_mpi: airfoil_mpi.cpp save_soln.h adt_calc.h res_calc.h bres_calc.h Makef
 	$(MPICPP) $(MPIFLAGS) $(OP2_INC) $(PARMETIS_INC) $(PTSCOTCH_INC) \
 	$(OP2_LIB) airfoil_mpi.cpp -lop2_mpi $(PARMETIS_LIB) $(PTSCOTCH_LIB) -o airfoil_mpi
 
-
+	
 #
 # mpi with openmp-nodes version
 #
@@ -139,7 +139,7 @@ airfoil_mpi_openmp: airfoil_mpi_op.cpp airfoil_kernels.cpp \
 		    $(MPICPP) $(MPIFLAGS) $(OMPFLAGS) airfoil_mpi_op.cpp airfoil_kernels.cpp \
 		    $(OP2_INC) $(PARMETIS_INC) $(PTSCOTCH_INC) $(HDF5_INC) \
 		    $(OP2_LIB) -lop2_mpi $(PARMETIS_LIB) $(PTSCOTCH_LIB) -o airfoil_mpi_openmp
-
+	
 #
 # mpi with CUDA version
 #
@@ -159,9 +159,9 @@ airfoil_kernels_mpi_cu.o:	airfoil_kernels.cu      \
 		  Makefile
 		  nvcc  $(INC) $(NVCCFLAGS) $(OP2_INC) -I $(MPI_INSTALL_PATH)/include \
 		  -c -o airfoil_kernels_mpi_cu.o airfoil_kernels.cu
+		  
 
-
-
+		  
 #
 # cleanup
 #

@@ -345,7 +345,8 @@ int main(int argc, char **argv)
   op_diagnostic_output();
 
   //trigger partitioning and halo creation routines
-  op_partition("PTSCOTCH", "KWAY", cells, pecell, p_x);
+  //op_partition("PTSCOTCH", "KWAY", cells, pecell, p_x);
+  op_partition("PARMETIS", "KWAY", cells, pecell, p_x);
 
   //initialise timers for total execution wall time
   op_timers(&cpu_t1, &wall_t1);
@@ -389,7 +390,7 @@ int main(int argc, char **argv)
           op_arg_dat(p_adt,   0,pbecell,1,"double",OP_READ),
           op_arg_dat(p_res,   0,pbecell,4,"double",OP_INC ),
           op_arg_dat(p_bound,-1,OP_ID  ,1,"int",  OP_READ));
-
+      
       //    update flow field
 
       rms = 0.0;
