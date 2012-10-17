@@ -345,7 +345,7 @@ int main(int argc, char **argv)
   op_diagnostic_output();
 
   //trigger partitioning and halo creation routines
-  op_partition("PTSCOTCH", "KWAY", cells, pecell, p_x);
+  op_partition("PTdfSCOTCH", "KWAY", cells, pecell, p_x);
 
   //initialise timers for total execution wall time
   op_timers(&cpu_t1, &wall_t1);
@@ -411,7 +411,7 @@ int main(int argc, char **argv)
   op_timers(&cpu_t2, &wall_t2);
 
   //output the result dat array to files
-  op_print_dat_to_txtfile(p_x, "out_grid_mpi.dat"); //ASCI
+  op_print_dat_to_txtfile(p_q, "out_grid_mpi.dat"); //ASCI
   op_print_dat_to_binfile(p_q, "out_grid_mpi.bin"); //Binary
 
   op_timing_output();
