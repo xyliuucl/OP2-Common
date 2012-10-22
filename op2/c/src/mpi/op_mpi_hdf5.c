@@ -1107,7 +1107,7 @@ void op_fetch_data_hdf5_mpi(op_dat dat, char* usr_ptr)
   }
   else
   {
-    printf("Unknown type %s, cannot error in op_fetch_data_hdf5_mpi() \n",dat->type,file_name);
+    printf("Unknown type %s, cannot error in op_fetch_data_hdf5_mpi() \n",dat->type);
   }
   
   MPI_Comm_free(&OP_MPI_HDF5_WORLD);

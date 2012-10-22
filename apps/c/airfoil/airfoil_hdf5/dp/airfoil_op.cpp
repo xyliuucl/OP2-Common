@@ -183,7 +183,7 @@ int main(int argc, char **argv)
   op_write_const_hdf5("qinf",4,"double",(char *)qinf,  "new_grid_out.h5");
 
   //trigger partitioning and halo creation routines
-  op_partition("PTSCdOTCH", "KWAY", edges, pecell, p_x);
+  op_partition("PTSCOTCH", "KWAY", edges, pecell, p_x);
 
   int g_ncell = op_get_size(cells);
 
@@ -263,11 +263,13 @@ int main(int argc, char **argv)
   double* q = (double *)malloc(sizeof(double)*op_get_size(cells)*4);
   op_fetch_data_hdf5(p_q, q);
     
-  printf("number of cells %d\n",op_get_size(cells));
-  for(int i = 0; i< op_get_size(cells)*4; i++)
-    printf("(%d) %lf",i,(double)q[i]);
+  //printf("number of cells %d\n",op_get_size(cells));
+  //for(int i = 0; i< op_get_size(cells)*4; i++)
+  //  printf("(%d) %lf",i,(double)q[i]);
   
   free(q);
+  
+  //op_fetch_data_hdf5_file(p_q, "q_file.h5");
   
   //output the result dat array to files
   //op_write_hdf5("new_grid_out.h5");
