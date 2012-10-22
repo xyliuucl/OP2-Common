@@ -461,6 +461,8 @@ int main(int argc, char **argv)
   op_print_dat_to_txtfile(p_q, "out_grid_mpi_op.dat"); //ASCI
   op_print_dat_to_binfile(p_q, "out_grid_mpi_op.bin"); //Binary
 
+  //op_fetch_data(p_q, q );
+  
   op_timing_output();
   op_printf("Max total runtime = %f\n",wall_t2-wall_t1);
   
