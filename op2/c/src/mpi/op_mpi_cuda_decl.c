@@ -355,10 +355,10 @@ void op_fetch_data_char ( op_dat dat, char * usr_ptr )
 {
   //need to get data from GPU
   op_cuda_get_data(dat);
-  
+
   //rearrange data backe to original order in mpi
   op_dat temp = op_mpi_get_data(dat);
-  
+
   //copy data into usr_ptr
   memcpy((void *)usr_ptr, (void *)temp->data, temp->set->size*temp->size);
   free(temp->data);
@@ -370,13 +370,27 @@ void op_fetch_data_hdf5_char(op_dat dat, char * usr_ptr, int low, int high)
 {
   //need to get data from GPU
   op_cuda_get_data(dat);
-  
+
   //rearrange data backe to original order in mpi
   op_dat temp = op_mpi_get_data(dat);
-  
+
   //do allgather on temp->data and copy it to memory block pointed to by use_ptr
-  op_fetch_data_hdf5_mpi(dat, usr_ptr, low, high);
-  
+  fetch_data_hdf5(dat, usr_ptr, low, high);
+
+  free(temp->data);
+  free(temp->set);
+  free(temp);
+}
+
+void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
+{
+  //need to get data from GPU
+  op_cuda_get_data(dat);
+
+  //rearrange data backe to original order in mpi
+  op_dat temp = op_mpi_get_data(dat);
+  fetch_data_hdf5_file(temp, file_name);
+
   free(temp->data);
   free(temp->set);
   free(temp);
