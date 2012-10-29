@@ -780,7 +780,7 @@ void op_write_const_hdf5(char const *name, int dim, char const *type, char* cons
 }
 
 /*******************************************************************************
-* Routine to write an op_dat to a named hdf5 file, 
+* Routine to write an op_dat to a named hdf5 file,
 * if file does not exist, creates it
 * if the data set does not exists in file creates data set
 *******************************************************************************/
@@ -793,11 +793,11 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
   hid_t dataspace; //data space identifier
 
   hsize_t  dimsf[2]; // dataset dimensions
-  
+
   if (file_exist(file_name) == 0)
   {
     printf("File %s does not exist .... creating file\n", file_name);
-    file_id = H5Fcreate(file_name, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);    
+    file_id = H5Fcreate(file_name, H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
   }
   else
   {
@@ -806,22 +806,23 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
     if(H5Lexists(file_id, dat->name, H5P_DEFAULT) != 0)
     {
       printf("op_dat %s exists in the file ... updating data\n", dat->name);
-      
-      hid_t attr;   //attribute identifier
-            
-      //find element size of this dat with available attributes
-      size_t dat_size = 0;
+
       //open existing data set
       dset_id = H5Dopen(file_id, dat->name, H5P_DEFAULT);
+
+      hid_t attr;   //attribute identifier
+
+      //find element size of this dat with available attributes
+      size_t dat_size = 0;
+
       //get OID of the attribute
       attr = H5Aopen(dset_id, "size", H5P_DEFAULT);
-      
+
       if(attr >0)
       {
         //read attribute
         H5Aread(attr,H5T_NATIVE_INT,&dat_size);
         H5Aclose(attr);
-        H5Dclose(dset_id);
         if(dat_size != dat->size)
         {
           printf("dat.size %zu in file %s and dim %d do not match ... aborting\n",
@@ -834,22 +835,19 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
         printf("data set %s on file %s does not have attribute 'size'",
           dat->name, file_name);
         printf(" -- cannot check size ... aborting\n");
-        exit(2);           
+        exit(2);
       }
-  
+
       //find dim with available attributes
       int dat_dim = 0;
-      //open existing data set
-      dset_id = H5Dopen(file_id, dat->name, H5P_DEFAULT);
       //get OID of the attribute
       attr = H5Aopen(dset_id, "dim", H5P_DEFAULT);
-      
+
       if(attr >0)
       {
         //read attribute
         H5Aread(attr,H5T_NATIVE_INT,&dat_dim);
         H5Aclose(attr);
-        H5Dclose(dset_id);
         if(dat_dim != dat->dim)
         {
           printf("dat.dim %d in file %s and dim %d do not match ... aborting\n",
@@ -861,30 +859,27 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
       {
         printf("data set %s on file %s does not have attribute 'dim'", dat->name, file_name);
         printf(" -- cannot check dim ... aborting\n");
-        exit(2);         
+        exit(2);
       }
-      
+
       //find type with available attributes
       dataspace= H5Screate(H5S_SCALAR);
       hid_t  atype = H5Tcopy(H5T_C_S1);
-      
-      //open existing data set
-      dset_id = H5Dopen(file_id, dat->name, H5P_DEFAULT);
+
       //get OID of the attribute
       attr = H5Aopen(dset_id, "type", H5P_DEFAULT);
-      
+
       if(attr >0)
       {
         //get length of attribute
         int attlen = H5Aget_storage_size(attr);
         H5Tset_size(atype, attlen+1);
-        
+
         //read attribute
         char typ[attlen+1];
         H5Aread(attr,atype,typ);
         H5Aclose(attr);
         H5Sclose(dataspace);
-        H5Dclose(dset_id);
         if(strcmp(typ,dat->type) != 0)
         {
           printf("dat.type %s in file %s and type %s do not match\n",typ,file_name,dat->type);
@@ -895,19 +890,18 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
       {
         printf("data set %s on file %s does not have attribute 'type'", dat->name, file_name);
         printf(" -- cannot check type ... aborting\n");
-        exit(2); 
+        exit(2);
       }
-      
+
       //
       //all good .. we can update existing dat now
       //
-      
-      //Create the dataspace for the dataset.      
+
+      //Create the dataspace for the dataset.
       dimsf[0] = dat->set->size;
       dimsf[1] = dat->dim;
       dataspace = H5Screate_simple(2, dimsf, NULL);
-      dset_id = H5Dopen(file_id, dat->name, H5P_DEFAULT);
-      
+
       if((strcmp(dat->type,"double")==0) || (strcmp(dat->type,"double:soa") == 0))
         H5Dwrite(dset_id, H5T_NATIVE_DOUBLE, H5S_ALL, dataspace, H5P_DEFAULT, dat->data);
       else if((strcmp(dat->type,"float")==0) || (strcmp(dat->type,"float:soa") == 0))
@@ -923,7 +917,7 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
         printf("Unknown type for data elements\n");
         exit(2);
       }
-      
+
       H5Dclose(dset_id);
       H5Sclose(dataspace);
       H5Fclose(file_id);
@@ -932,18 +926,18 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
     else
     {
       printf("op_dat %s does not exists in the file ... creating data set", dat->name);
-    }   
+    }
   }
-  
+
   //
   // new file and new data set ...
   //
-  
+
   //Create the dataspace for the dataset.
   dimsf[0] = dat->set->size;
   dimsf[1] = dat->dim;
   dataspace = H5Screate_simple(2, dimsf, NULL);
-  
+
   //Create the dataset with default properties and write data
   if((strcmp(dat->type,"double")==0) || (strcmp(dat->type,"double:soa") == 0))
   {
@@ -980,7 +974,7 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
     printf("Unknown type for data elements\n");
     exit(2);
   }
-  
+
   H5Sclose(dataspace);
   H5Dclose(dset_id);
 
@@ -1021,7 +1015,7 @@ void op_fetch_data_hdf5_file(op_dat dat, char const *file_name)
 
   //Close the dataspace.
   H5Sclose(dataspace);
-  H5Dclose(dset_id);    
- 
+  H5Dclose(dset_id);
+
   H5Fclose(file_id);
 }
