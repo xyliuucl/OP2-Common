@@ -1,0 +1,4 @@
+debian/tmp/usr/lib/libop2_seq.so    /usr/lib
+debian/tmp/usr/lib/libop2_openmp.so /usr/lib
+debian/tmp/usr/lib/libop2_hdf5.so   /usr/lib
+debian/tmp/usr/lib/libop2_mpi.so    /usr/lib

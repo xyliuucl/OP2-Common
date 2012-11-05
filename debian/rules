@@ -1,0 +1,51 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+CMAKE ?= cmake
+
+INSTALL_PREFIX ?= /usr
+OP2=${CURDIR}/op2
+OP2_DOC_DIR=${CURDIR}/doc
+OP2_C_HOME=${OP2}/c
+OP2_C_BUILD=${OP2_C_HOME}/build
+OP2_FORTRAN_HOME=${OP2}/fortran
+DEB_DESTDIR ?= $(CURDIR)/debian/tmp/
+DEB_MAKE_INSTALL_TARGET ?= install DESTDIR=$(DEB_DESTDIR)
+CMAKE_BUILD_TYPE=Release
+CMAKE_FLAGS = -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -DCMAKE_SKIP_RPATH=ON -DOP2_WITH_CUDA=OFF \
+	      -DOP2_WITH_HDF5=ON -DOP2_WITH_MPI=ON -DOP2_WITH_PTSCOTCH=ON -DOP2_WITH_PARMETIS=OFF \
+	      -DOP2_WITH_OPENMP=ON -DOP2_WITH_MATRICES=ON -DOP2_WITH_SEQ=ON -DBUILD_SHARED_LIBS=ON \
+	      -DOP2_ENABLE_FORTRAN_INTERFACE=ON -DCMAKE_VERBOSE_CONFIGURE=ON \
+	      -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+
+LATEX_DOCS = C++_Users_Guide.tex dev.tex OP2-CommonLib-ImplementationDesign.tex # mpi-dev.tex (broken)
+
+%:
+	dh $@
+
+override_dh_auto_build: ${OP2_C_BUILD}/CMakeCache.txt
+	dh_testdir
+	cd ${OP2_C_BUILD} && make
+	#OP2=${OP2} OP2_COMPILER="gnu" make -C ${OP2_FORTRAN_HOME}
+	cd ${OP2_DOC_DIR} && for LATEX_DOC in ${LATEX_DOCS}; do pdflatex $${LATEX_DOC}; done
+
+override_dh_install:
+	dh_testdir
+	cd ${OP2_C_BUILD} && make ${DEB_MAKE_INSTALL_TARGET}
+	dh_install
+
+override_dh_auto_configure:
+	dh_testdir
+	mkdir -p ${OP2_C_BUILD} && cd ${OP2_C_BUILD} && cmake ${CMAKE_FLAGS} ${OP2_C_HOME}
+
+override_dh_compress:
+	dh_compress --exclude=.pdf --exclude=.rtf
+
+override_dh_clean:
+	dh_testdir
+	dh_clean
+	rm -rf ${OP2_C_BUILD} ${DEB_DESTDIR} 
+	cd ${OP2_DOC_DIR} && rm -f *.pdf *.aux *.toc *.log *.out
+	#make -C ${OP2_FORTRAN_HOME} clean

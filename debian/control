@@ -1,0 +1,30 @@
+Source: op2-common
+Priority: extra
+Maintainer: Francis Russell <francis.russell02@imperial.ac.uk>
+Build-Depends: debhelper (>= 8.0.0), cmake, mpi-default-dev, libhdf5-mpi-dev, 
+ libptscotch-dev, texlive-latex-base, libpetsc3.1-dev | libpetsc3.2-dev,
+ texlive-science, texlive-latex-extra, texlive-latex-recommended
+Standards-Version: 3.9.3
+Section: libs
+Homepage: http://www.oerc.ox.ac.uk/research/op2
+#Vcs-Git: git://git.debian.org/collab-maint/op2-common.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/op2-common.git;a=summary
+
+Package: libop2-dev
+Section: libdevel
+Architecture: any
+Depends: libop2 (= ${binary:Version})
+Suggests: libop2-doc
+Description: The OP2 common libraries
+
+Package: libop2
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: The OP2 common development files
+
+Package: libop2-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Description: The OP2 documentation.
